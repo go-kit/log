@@ -71,7 +71,7 @@ func IsMSYSTerminal(w io.Writer) bool {
 	}
 
 	// MSYS2/Cygwin terminal's name looks like: \msys-dd50a72ab4668b33-pty2-to-master
-	data := make([]byte, 256, 256)
+	data := make([]byte, 256)
 
 	r, _, e := syscall.Syscall6(
 		procGetFileInformationByHandleEx.Addr(),
@@ -87,7 +87,7 @@ func IsMSYSTerminal(w io.Writer) bool {
 	if r != 0 && e == 0 {
 		// The first 4 bytes of the buffer are the size of the UTF16 name, in bytes.
 		unameLen := binary.LittleEndian.Uint32(data[:4]) / 2
-		uname := make([]uint16, unameLen, unameLen)
+		uname := make([]uint16, unameLen)
 
 		for i := uint32(0); i < unameLen; i++ {
 			uname[i] = binary.LittleEndian.Uint16(data[i*2+4 : i*2+2+4])

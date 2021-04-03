@@ -45,7 +45,7 @@ func (w *colorWriter) Write(data []byte) (n int, err error) {
 	er := bytes.NewBuffer(data)
 loop:
 	for {
-		r1, _, err := procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))
+		r1, _, _ := procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))
 		if r1 == 0 {
 			break loop
 		}
@@ -161,22 +161,22 @@ const (
 )
 
 type (
-	wchar uint16
-	short int16
-	dword uint32
-	word  uint16
+	wchar uint16 //lint:ignore U1000 unused
+	short int16  //lint:ignore U1000 unused
+	dword uint32 //lint:ignore U1000 unused
+	word  uint16 //lint:ignore U1000 unused
 )
 
 type coord struct {
-	x short
-	y short
+	x short //lint:ignore U1000 unused
+	y short //lint:ignore U1000 unused
 }
 
 type smallRect struct {
-	left   short
-	top    short
-	right  short
-	bottom short
+	left   short //lint:ignore U1000 unused
+	top    short //lint:ignore U1000 unused
+	right  short //lint:ignore U1000 unused
+	bottom short //lint:ignore U1000 unused
 }
 
 type consoleScreenBufferInfo struct {

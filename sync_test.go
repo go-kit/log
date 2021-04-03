@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 )
 
 func TestSwapLogger(t *testing.T) {
@@ -58,7 +58,7 @@ func TestSwapLoggerConcurrency(t *testing.T) {
 }
 
 func TestSyncLoggerConcurrency(t *testing.T) {
-	var w io.Writer
+	var w io.Writer //lint:ignore S1021 I prefer this
 	w = &bytes.Buffer{}
 	logger := log.NewLogfmtLogger(w)
 	logger = log.NewSyncLogger(logger)
