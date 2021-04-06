@@ -18,9 +18,9 @@ func (w *myWriter) Fd() uintptr {
 	return w.fd
 }
 
-var procGetStdHandle = kernel32.NewProc("GetStdHandle")
+var procGetStdHandle = kernel32.NewProc("GetStdHandle") //lint:ignore U1000 unused
 
-const stdOutputHandle = ^uintptr(0) - 11 + 1
+const stdOutputHandle = ^uintptr(0) - 11 + 1 //lint:ignore U1000 unused
 
 func getConsoleHandle() syscall.Handle {
 	ptr, err := syscall.UTF16PtrFromString("CONOUT$")
