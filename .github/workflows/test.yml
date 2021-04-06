@@ -24,6 +24,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v1
     - name: Fmt
+      if: matrix.platform != 'windows-latest' # :(
       run: "diff <(gofmt -d .) <(printf '')"
       shell: bash
     - name: Vet
