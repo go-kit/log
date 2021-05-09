@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/go-stack/stack"
 )
 
