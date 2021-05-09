@@ -163,7 +163,7 @@ func (l *context) Log(keyvals ...interface{}) error {
 	}
 	kvs = append(kvs, l.sKeyvals...)
 	if l.sHasValuer {
-		bindValues(kvs[len(kvs) - len(l.sKeyvals):])
+		bindValues(kvs[len(kvs)-len(l.sKeyvals):])
 	}
 	return l.logger.Log(kvs...)
 }
