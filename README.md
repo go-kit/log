@@ -1,7 +1,3 @@
-<h3 align="center">:warning: &nbsp; PRE-RELEASE &nbsp; :warning:</h3>
-<h4 align="center">DO NOT IMPORT THIS MODULE</h4>
-<h4 align="center">YOUR PROJECT WILL BREAK</h4>
-
 # package log
 
 `package log` provides a minimal interface for structured logging in services.
