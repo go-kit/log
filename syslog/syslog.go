@@ -1,6 +1,5 @@
-// +build !windows
-// +build !plan9
-// +build !nacl
+//go:build !windows && !plan9 && !nacl
+// +build !windows,!plan9,!nacl
 
 package syslog
 
