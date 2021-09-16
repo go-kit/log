@@ -2,12 +2,11 @@ package log_test
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"testing"
 
 	"github.com/go-kit/log"
-	"github.com/go-stack/stack"
+	"github.com/go-kit/log/internal/stack"
 )
 
 func TestContext(t *testing.T) {
@@ -109,7 +108,7 @@ func TestWithPrefixAndSuffix(t *testing.T) {
 // Valuers, regardless of how many times With has been called.
 func TestContextStackDepth(t *testing.T) {
 	t.Parallel()
-	fn := fmt.Sprintf("%n", stack.Caller(0))
+	fn := stack.Caller(0).Function
 
 	var output []interface{}
 
@@ -119,8 +118,8 @@ func TestContextStackDepth(t *testing.T) {
 	}))
 
 	stackValuer := log.Valuer(func() interface{} {
-		for i, c := range stack.Trace() {
-			if fmt.Sprintf("%n", c) == fn {
+		for i, f := range stack.Trace() {
+			if f.Function == fn {
 				return i
 			}
 		}
