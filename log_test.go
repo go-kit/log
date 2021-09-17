@@ -2,11 +2,11 @@ package log_test
 
 import (
 	"bytes"
+	"runtime"
 	"sync"
 	"testing"
 
 	"github.com/go-kit/log"
-	"github.com/go-kit/log/internal/stack"
 )
 
 func TestContext(t *testing.T) {
@@ -108,7 +108,7 @@ func TestWithPrefixAndSuffix(t *testing.T) {
 // Valuers, regardless of how many times With has been called.
 func TestContextStackDepth(t *testing.T) {
 	t.Parallel()
-	fn := stack.Caller(0).Function
+	fn := callingFunctions()[0]
 
 	var output []interface{}
 
@@ -118,8 +118,8 @@ func TestContextStackDepth(t *testing.T) {
 	}))
 
 	stackValuer := log.Valuer(func() interface{} {
-		for i, f := range stack.Trace() {
-			if f.Function == fn {
+		for i, f := range callingFunctions() {
+			if f == fn {
 				return i
 			}
 		}
@@ -147,6 +147,29 @@ func TestContextStackDepth(t *testing.T) {
 
 		logger = log.With(logger, "k", "v")
 	}
+}
+
+// callingFunctions returns the names of the functions on the call stack for the
+// current goroutine with element 0 identifying the calling function.
+func callingFunctions() []string {
+	pcs := make([]uintptr, 10)
+	n := runtime.Callers(2, pcs)
+	if n == 0 {
+		return nil
+	}
+
+	frames := runtime.CallersFrames(pcs[:n])
+	funcs := make([]string, 0, n)
+
+	for {
+		frame, more := frames.Next()
+		funcs = append(funcs, frame.Function)
+		if !more {
+			break
+		}
+	}
+
+	return funcs
 }
 
 // Test that With returns a Logger safe for concurrent use. This test
