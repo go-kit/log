@@ -68,7 +68,7 @@ func TestJSONLoggerPanicStringerValue(t *testing.T) {
 	if err := logger.Log("k", unsafeStringer{}); err != nil {
 		t.Fatal(err)
 	}
-	if want, have := `{"k":"panic stringer value: error"}`+"\n", buf.String(); want != have {
+	if want, have := `{"k":"PANIC in String method: error"}`+"\n", buf.String(); want != have {
 		t.Errorf("\nwant %#v\nhave %#v", want, have)
 	}
 }
@@ -94,7 +94,7 @@ func TestJSONLoggerPanicErrorValue(t *testing.T) {
 	if err := logger.Log("err", unsafeError{}); err != nil {
 		t.Fatal(err)
 	}
-	if want, have := `{"err":"panic error value: error"}`+"\n", buf.String(); want != have {
+	if want, have := `{"err":"PANIC in Error method: error"}`+"\n", buf.String(); want != have {
 		t.Errorf("\nwant %#v\nhave %#v", want, have)
 	}
 }
