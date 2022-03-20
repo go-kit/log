@@ -60,6 +60,19 @@ func TestJSONLoggerNilStringerKey(t *testing.T) {
 	}
 }
 
+func TestJSONLoggerPanicStringerValue(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewJSONLogger(buf)
+	if err := logger.Log("k", unsafeStringer{}); err != nil {
+		t.Fatal(err)
+	}
+	if want, have := `{"k":"PANIC in String method: error"}`+"\n", buf.String(); want != have {
+		t.Errorf("\nwant %#v\nhave %#v", want, have)
+	}
+}
+
 func TestJSONLoggerNilErrorValue(t *testing.T) {
 	t.Parallel()
 
@@ -69,6 +82,19 @@ func TestJSONLoggerNilErrorValue(t *testing.T) {
 		t.Fatal(err)
 	}
 	if want, have := `{"err":null}`+"\n", buf.String(); want != have {
+		t.Errorf("\nwant %#v\nhave %#v", want, have)
+	}
+}
+
+func TestJSONLoggerPanicErrorValue(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewJSONLogger(buf)
+	if err := logger.Log("err", unsafeError{}); err != nil {
+		t.Fatal(err)
+	}
+	if want, have := `{"err":"PANIC in Error method: error"}`+"\n", buf.String(); want != have {
 		t.Errorf("\nwant %#v\nhave %#v", want, have)
 	}
 }
@@ -158,6 +184,18 @@ type stringError string
 
 func (s stringError) Error() string {
 	return string(s)
+}
+
+type unsafeStringer struct{}
+
+func (s unsafeStringer) String() string {
+	panic("error")
+}
+
+type unsafeError struct{}
+
+func (s unsafeError) Error() string {
+	panic("error")
 }
 
 func BenchmarkJSONLoggerSimple(b *testing.B) {
