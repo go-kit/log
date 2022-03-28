@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-kit/log.svg)](https://pkg.go.dev/github.com/go-kit/log)
 [![Go Report Card](https://goreportcard.com/badge/go-kit/log)](https://goreportcard.com/report/go-kit/log)
-[![Github Actions](https://github.com/go-kit/log/actions/workflows/test.yml/badge.svg)](https://github.com/go-kit/log/actions/workflows/test.yml)
+[![GitHub Actions](https://github.com/go-kit/log/actions/workflows/test.yml/badge.svg)](https://github.com/go-kit/log/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/go-kit/log/badge.svg?branch=master)](https://coveralls.io/github/go-kit/log?branch=main)
 
 `package log` provides a minimal interface for structured logging in services.
