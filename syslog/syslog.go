@@ -1,6 +1,7 @@
 //go:build !windows && !plan9 && !nacl
 // +build !windows,!plan9,!nacl
 
+// Package syslog provides a Logger that writes to syslog.
 package syslog
 
 import (
