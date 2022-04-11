@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrInvalidLevelString = errors.New("invalid level string.")
+	ErrInvalidLevelString = errors.New("invalid level string")
 )
 
 // Error returns a logger that includes a Key/ErrorValue pair.
