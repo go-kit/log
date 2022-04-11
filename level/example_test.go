@@ -35,8 +35,8 @@ func Example_filtered() {
 	level.Debug(logger).Log("next item", 17) // filtered
 
 	// Output:
-	// level=error caller=example_test.go:32 err="bad data"
-	// level=info caller=example_test.go:33 event="data saved"
+	// level=error caller=example_test.go:33 err="bad data"
+	// level=info caller=example_test.go:34 event="data saved"
 }
 
 func Example_parsed() {

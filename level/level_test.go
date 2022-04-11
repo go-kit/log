@@ -187,7 +187,7 @@ func TestLevelContext(t *testing.T) {
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `level=info caller=level_test.go:184 foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `level=info caller=level_test.go:189 foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
@@ -203,7 +203,7 @@ func TestContextLevel(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowAll())
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `caller=level_test.go:200 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `caller=level_test.go:205 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
