@@ -7,11 +7,11 @@
 //    logger = level.NewFilter(logger, level.AllowInfo()) // <--
 //    logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 //
-// It's also possible to configure log level from a string (for instance from
-// a flag, environment variable or configuration file).
+// It's also possible to configure log level from a string. For instance from
+// a flag, environment variable or configuration file.
 //
-//    fs := flag.NewFlagSet("example")
-//    lvl := fs.String("log-level", "", `"debug", "info", "warn" or "error"`)
+//    fs := flag.NewFlagSet("myprogram")
+//    lvl := fs.String("log", "info", "debug, info, warn, error")
 //
 //    var logger log.Logger
 //    logger = log.NewLogfmtLogger(os.Stderr)

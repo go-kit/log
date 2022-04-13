@@ -75,24 +75,24 @@ func (l *logger) Log(keyvals ...interface{}) error {
 // Option sets a parameter for the leveled logger.
 type Option func(*logger)
 
-// Allow allows to configure the log level with a Value.
+// Allow the provided log level to pass.
 func Allow(v Value) Option {
-	if v != nil {
-		switch v.String() {
-		case debugValue.name:
-			return AllowDebug()
+	switch v {
+	case debugValue:
+		return AllowDebug()
 
-		case infoValue.name:
-			return AllowInfo()
+	case infoValue:
+		return AllowInfo()
 
-		case warnValue.name:
-			return AllowWarn()
+	case warnValue:
+		return AllowWarn()
 
-		case errorValue.name:
-			return AllowError()
-		}
+	case errorValue:
+		return AllowError()
+
+	default:
+		return AllowNone()
 	}
-	return AllowNone()
 }
 
 // AllowAll is an alias for AllowDebug.
@@ -129,8 +129,9 @@ func allowed(allowed level) Option {
 	return func(l *logger) { l.allowed = allowed }
 }
 
-// Parse returns a Value from a level string. Allowed values are "debug", "info", "warn" and "error".
-// Levels are normalized via strings.TrimSpace and strings.ToLower
+// Parse a string to it's corresponding level value. Valid strings are "debug",
+// "info", "warn", and "error". Strings are normalized via strings.TrimSpace and
+// strings.ToLower.
 func Parse(level string) (Value, error) {
 	switch strings.TrimSpace(strings.ToLower(level)) {
 	case debugValue.name:
@@ -150,13 +151,12 @@ func Parse(level string) (Value, error) {
 	}
 }
 
-// ParseDefault returns a Value from a level string or the default if the level is not valid.
+// ParseDefault calls Parse and returns the default Value on error.
 func ParseDefault(level string, def Value) Value {
-	if v, err := Parse(level); err != nil {
-		return def
-	} else {
+	if v, err := Parse(level); err == nil {
 		return v
 	}
+	return def
 }
 
 // ErrNotAllowed sets the error to return from Log when it squelches a log

@@ -12,14 +12,13 @@ import (
 )
 
 func TestVariousLevels(t *testing.T) {
-
 	testCases := []struct {
 		name    string
 		allowed level.Option
 		want    string
 	}{
 		{
-			"Allow - Debug",
+			"Allow(DebugValue)",
 			level.Allow(level.DebugValue()),
 			strings.Join([]string{
 				`{"level":"debug","this is":"debug log"}`,
@@ -29,7 +28,7 @@ func TestVariousLevels(t *testing.T) {
 			}, "\n"),
 		},
 		{
-			"Allow - Info",
+			"Allow(InfoValue)",
 			level.Allow(level.InfoValue()),
 			strings.Join([]string{
 				`{"level":"info","this is":"info log"}`,
@@ -38,7 +37,7 @@ func TestVariousLevels(t *testing.T) {
 			}, "\n"),
 		},
 		{
-			"Allow - Warn",
+			"Allow(WarnValue)",
 			level.Allow(level.WarnValue()),
 			strings.Join([]string{
 				`{"level":"warn","this is":"warn log"}`,
@@ -46,14 +45,14 @@ func TestVariousLevels(t *testing.T) {
 			}, "\n"),
 		},
 		{
-			"Allow - Error",
+			"Allow(ErrorValue)",
 			level.Allow(level.ErrorValue()),
 			strings.Join([]string{
 				`{"level":"error","this is":"error log"}`,
 			}, "\n"),
 		},
 		{
-			"Allow - nil",
+			"Allow(nil)",
 			level.Allow(nil),
 			strings.Join([]string{}, "\n"),
 		},
@@ -187,7 +186,7 @@ func TestLevelContext(t *testing.T) {
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `level=info caller=level_test.go:189 foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `level=info caller=level_test.go:188 foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
@@ -203,7 +202,7 @@ func TestContextLevel(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowAll())
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `caller=level_test.go:205 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `caller=level_test.go:204 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
