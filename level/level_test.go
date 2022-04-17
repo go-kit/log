@@ -278,56 +278,56 @@ func TestParse(t *testing.T) {
 		name    string
 		level   string
 		want    level.Value
-		wantErr bool
+		wantErr error
 	}{
 		{
 			name:    "Debug",
 			level:   "debug",
 			want:    level.DebugValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Info",
 			level:   "info",
 			want:    level.InfoValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Warn",
 			level:   "warn",
 			want:    level.WarnValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Error",
 			level:   "error",
 			want:    level.ErrorValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Case Insensitive",
 			level:   "ErRoR",
 			want:    level.ErrorValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Trimmed",
 			level:   " Error ",
 			want:    level.ErrorValue(),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name:    "Invalid",
 			level:   "invalid",
 			want:    nil,
-			wantErr: true,
+			wantErr: level.ErrInvalidLevelString,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := level.Parse(tc.level)
-			if (err != nil) != tc.wantErr {
+			if err != tc.wantErr {
 				t.Errorf("got unexpected error %#v", err)
 			}
 
