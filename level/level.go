@@ -144,10 +144,11 @@ func Parse(level string) (Value, error) {
 
 // ParseDefault calls Parse and returns the default Value on error.
 func ParseDefault(level string, def Value) Value {
-	if v, err := Parse(level); err == nil {
-		return v
+	v, err := Parse(level)
+	if err != nil {
+		return def
 	}
-	return def
+	return v
 }
 
 // ErrNotAllowed sets the error to return from Log when it squelches a log
