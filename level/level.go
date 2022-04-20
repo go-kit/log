@@ -7,7 +7,7 @@ import (
 	"github.com/go-kit/log"
 )
 
-// ErrInvalidLevelString is returned whenever an invalid string is passed to Parse
+// ErrInvalidLevelString is returned whenever an invalid string is passed to Parse.
 var ErrInvalidLevelString = errors.New("invalid level string")
 
 // Error returns a logger that includes a Key/ErrorValue pair.
