@@ -1,6 +1,7 @@
 package log_test
 
 import (
+	stdctx "context"
 	"math/rand"
 	"os"
 	"sync"
@@ -63,7 +64,7 @@ func Example_valuer() {
 	logger := log.NewLogfmtLogger(os.Stdout)
 
 	count := 0
-	counter := func() interface{} {
+	counter := func(stdctx.Context) interface{} {
 		count++
 		return count
 	}
@@ -98,9 +99,9 @@ func Example_debugInfo() {
 	logger.Log("call", "third")
 
 	// Output:
-	// time=2015-02-03T10:00:01Z caller=example_test.go:93 call=first
-	// time=2015-02-03T10:00:02Z caller=example_test.go:94 call=second
-	// time=2015-02-03T10:00:03Z caller=example_test.go:98 call=third
+	// time=2015-02-03T10:00:01Z caller=example_test.go:94 call=first
+	// time=2015-02-03T10:00:02Z caller=example_test.go:95 call=second
+	// time=2015-02-03T10:00:03Z caller=example_test.go:99 call=third
 }
 
 func Example_syncWriter() {

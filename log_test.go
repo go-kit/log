@@ -2,6 +2,7 @@ package log_test
 
 import (
 	"bytes"
+	stdctx "context"
 	"runtime"
 	"sync"
 	"testing"
@@ -117,7 +118,7 @@ func TestContextStackDepth(t *testing.T) {
 		return nil
 	}))
 
-	stackValuer := log.Valuer(func() interface{} {
+	stackValuer := log.Valuer(func(stdctx.Context) interface{} {
 		for i, f := range callingFunctions() {
 			if f == fn {
 				return i
@@ -225,7 +226,7 @@ func TestLogCopiesValuers(t *testing.T) {
 	}))
 
 	valuerCallCount := 0
-	counterValuer := log.Valuer(func() interface{} {
+	counterValuer := log.Valuer(func(stdctx.Context) interface{} {
 		valuerCallCount++
 		return valuerCallCount
 	})

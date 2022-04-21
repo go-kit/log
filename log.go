@@ -1,6 +1,9 @@
 package log
 
-import "errors"
+import (
+	stdctx "context"
+	"errors"
+)
 
 // Logger is the fundamental interface for all log operations. Log creates a
 // log event from keyvals, a variadic sequence of alternating keys and values.
@@ -136,13 +139,14 @@ type context struct {
 	sKeyvals   []interface{} // suffixes
 	hasValuer  bool
 	sHasValuer bool
+	ctx        stdctx.Context
 }
 
 func newContext(logger Logger) *context {
 	if c, ok := logger.(*context); ok {
 		return c
 	}
-	return &context{logger: logger}
+	return &context{logger: logger, ctx: stdctx.Background()}
 }
 
 // Log replaces all value elements (odd indexes) containing a Valuer in the
@@ -159,11 +163,11 @@ func (l *context) Log(keyvals ...interface{}) error {
 		if len(keyvals) == 0 {
 			kvs = append([]interface{}{}, l.keyvals...)
 		}
-		bindValues(kvs[:(len(l.keyvals))])
+		bindValues(l.ctx, kvs[:(len(l.keyvals))])
 	}
 	kvs = append(kvs, l.sKeyvals...)
 	if l.sHasValuer {
-		bindValues(kvs[len(kvs)-len(l.sKeyvals):])
+		bindValues(l.ctx, kvs[len(kvs)-len(l.sKeyvals):])
 	}
 	return l.logger.Log(kvs...)
 }

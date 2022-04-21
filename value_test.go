@@ -1,6 +1,7 @@
 package log_test
 
 import (
+	stdctx "context"
 	"encoding"
 	"fmt"
 	"reflect"
@@ -36,7 +37,7 @@ func TestValueBinding(t *testing.T) {
 	if want, have := start.Add(time.Second), timestamp; want != have {
 		t.Errorf("output[1]: want %v, have %v", want, have)
 	}
-	if want, have := "value_test.go:31", fmt.Sprint(output[3]); want != have {
+	if want, have := "value_test.go:32", fmt.Sprint(output[3]); want != have {
 		t.Errorf("output[3]: want %s, have %s", want, have)
 	}
 
@@ -49,7 +50,7 @@ func TestValueBinding(t *testing.T) {
 	if want, have := start.Add(2*time.Second), timestamp; want != have {
 		t.Errorf("output[1]: want %v, have %v", want, have)
 	}
-	if want, have := "value_test.go:44", fmt.Sprint(output[3]); want != have {
+	if want, have := "value_test.go:45", fmt.Sprint(output[3]); want != have {
 		t.Errorf("output[3]: want %s, have %s", want, have)
 	}
 }
@@ -95,6 +96,7 @@ func TestValueBinding_loggingZeroKeyvals(t *testing.T) {
 func TestTimestampFormat(t *testing.T) {
 	t.Parallel()
 
+	ctx := stdctx.Background()
 	start := time.Date(2015, time.April, 25, 0, 0, 0, 0, time.UTC)
 	now := start
 	mocktime := func() time.Time {
@@ -104,11 +106,11 @@ func TestTimestampFormat(t *testing.T) {
 
 	tv := log.TimestampFormat(mocktime, time.RFC822)
 
-	if want, have := now.Add(time.Second).Format(time.RFC822), fmt.Sprint(tv()); want != have {
+	if want, have := now.Add(time.Second).Format(time.RFC822), fmt.Sprint(tv(ctx)); want != have {
 		t.Errorf("wrong time format: want %v, have %v", want, have)
 	}
 
-	if want, have := now.Add(2*time.Second).Format(time.RFC822), fmt.Sprint(tv()); want != have {
+	if want, have := now.Add(2*time.Second).Format(time.RFC822), fmt.Sprint(tv(ctx)); want != have {
 		t.Errorf("wrong time format: want %v, have %v", want, have)
 	}
 
@@ -120,11 +122,11 @@ func TestTimestampFormat(t *testing.T) {
 		return b
 	}
 
-	if want, have := now.Add(3*time.Second).AppendFormat(nil, time.RFC822), mustMarshal(tv()); !reflect.DeepEqual(want, have) {
+	if want, have := now.Add(3*time.Second).AppendFormat(nil, time.RFC822), mustMarshal(tv(ctx)); !reflect.DeepEqual(want, have) {
 		t.Errorf("wrong time format: want %s, have %s", want, have)
 	}
 
-	if want, have := now.Add(4*time.Second).AppendFormat(nil, time.RFC822), mustMarshal(tv()); !reflect.DeepEqual(want, have) {
+	if want, have := now.Add(4*time.Second).AppendFormat(nil, time.RFC822), mustMarshal(tv(ctx)); !reflect.DeepEqual(want, have) {
 		t.Errorf("wrong time format: want %s, have %s", want, have)
 	}
 }
