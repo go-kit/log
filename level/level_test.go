@@ -18,6 +18,45 @@ func TestVariousLevels(t *testing.T) {
 		want    string
 	}{
 		{
+			"Allow(DebugValue)",
+			level.Allow(level.DebugValue()),
+			strings.Join([]string{
+				`{"level":"debug","this is":"debug log"}`,
+				`{"level":"info","this is":"info log"}`,
+				`{"level":"warn","this is":"warn log"}`,
+				`{"level":"error","this is":"error log"}`,
+			}, "\n"),
+		},
+		{
+			"Allow(InfoValue)",
+			level.Allow(level.InfoValue()),
+			strings.Join([]string{
+				`{"level":"info","this is":"info log"}`,
+				`{"level":"warn","this is":"warn log"}`,
+				`{"level":"error","this is":"error log"}`,
+			}, "\n"),
+		},
+		{
+			"Allow(WarnValue)",
+			level.Allow(level.WarnValue()),
+			strings.Join([]string{
+				`{"level":"warn","this is":"warn log"}`,
+				`{"level":"error","this is":"error log"}`,
+			}, "\n"),
+		},
+		{
+			"Allow(ErrorValue)",
+			level.Allow(level.ErrorValue()),
+			strings.Join([]string{
+				`{"level":"error","this is":"error log"}`,
+			}, "\n"),
+		},
+		{
+			"Allow(nil)",
+			level.Allow(nil),
+			strings.Join([]string{}, "\n"),
+		},
+		{
 			"AllowAll",
 			level.AllowAll(),
 			strings.Join([]string{
@@ -147,7 +186,7 @@ func TestLevelContext(t *testing.T) {
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `level=info caller=level_test.go:149 foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `level=info caller=level_test.go:188 foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
@@ -163,7 +202,7 @@ func TestContextLevel(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowAll())
 
 	level.Info(logger).Log("foo", "bar")
-	if want, have := `caller=level_test.go:165 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
+	if want, have := `caller=level_test.go:204 level=info foo=bar`, strings.TrimSpace(buf.String()); want != have {
 		t.Errorf("\nwant '%s'\nhave '%s'", want, have)
 	}
 }
@@ -231,5 +270,124 @@ func TestInjector(t *testing.T) {
 	}
 	if got, want := output[1], level.ErrorValue(); got != want {
 		t.Errorf("wrong level value: got %#v, want %#v", got, want)
+	}
+}
+
+func TestParse(t *testing.T) {
+	testCases := []struct {
+		name    string
+		level   string
+		want    level.Value
+		wantErr error
+	}{
+		{
+			name:    "Debug",
+			level:   "debug",
+			want:    level.DebugValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Info",
+			level:   "info",
+			want:    level.InfoValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Warn",
+			level:   "warn",
+			want:    level.WarnValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			level:   "error",
+			want:    level.ErrorValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Case Insensitive",
+			level:   "ErRoR",
+			want:    level.ErrorValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Trimmed",
+			level:   " Error ",
+			want:    level.ErrorValue(),
+			wantErr: nil,
+		},
+		{
+			name:    "Invalid",
+			level:   "invalid",
+			want:    nil,
+			wantErr: level.ErrInvalidLevelString,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := level.Parse(tc.level)
+			if err != tc.wantErr {
+				t.Errorf("got unexpected error %#v", err)
+			}
+
+			if got != tc.want {
+				t.Errorf("wrong value: got=%#v, want=%#v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestParseDefault(t *testing.T) {
+	testCases := []struct {
+		name  string
+		level string
+		want  level.Value
+	}{
+		{
+			name:  "Debug",
+			level: "debug",
+			want:  level.DebugValue(),
+		},
+		{
+			name:  "Info",
+			level: "info",
+			want:  level.InfoValue(),
+		},
+		{
+			name:  "Warn",
+			level: "warn",
+			want:  level.WarnValue(),
+		},
+		{
+			name:  "Error",
+			level: "error",
+			want:  level.ErrorValue(),
+		},
+		{
+			name:  "Case Insensitive",
+			level: "ErRoR",
+			want:  level.ErrorValue(),
+		},
+		{
+			name:  "Trimmed",
+			level: " Error ",
+			want:  level.ErrorValue(),
+		},
+		{
+			name:  "Invalid",
+			level: "invalid",
+			want:  level.InfoValue(),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := level.ParseDefault(tc.level, level.InfoValue())
+
+			if got != tc.want {
+				t.Errorf("wrong value: got=%#v, want=%#v", got, tc.want)
+			}
+		})
 	}
 }
