@@ -26,7 +26,7 @@ func (l *LineBufferedLogger) Size() uint32 {
 // If the buffer is full (entries == cap), it will be flushed, and the entries counter reset.
 func (l *LineBufferedLogger) Write(p []byte) (n int, err error) {
 	// when we've filled the buffer, flush it
-	if l.Size() == l.cap {
+	if l.Size() >= l.cap {
 		// Flush resets the size to 0
 		if err := l.Flush(); err != nil {
 			return 0, err
