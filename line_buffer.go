@@ -29,6 +29,7 @@ func (l *LineBufferedLogger) Write(p []byte) (n int, err error) {
 	if l.Size() >= l.cap {
 		// Flush resets the size to 0
 		if err := l.Flush(); err != nil {
+			l.buf.Reset()
 			return 0, err
 		}
 	}
@@ -47,6 +48,7 @@ func (l *LineBufferedLogger) Flush() error {
 	// reset the counter
 	atomic.StoreUint32(&l.entries, 0)
 
+	// WriteTo() calls Reset() on the underlying buffer, so it's not needed here
 	_, err := l.buf.WriteTo(l.w)
 	return err
 }
@@ -106,6 +108,16 @@ func (t *threadsafeBuffer) WriteTo(w io.Writer) (n int64, err error) {
 	defer t.Unlock()
 
 	return t.buf.WriteTo(w)
+}
+
+// Reset resets the buffer to be empty,
+// but it retains the underlying storage for use by future writes.
+// Reset is the same as Truncate(0).
+func (t *threadsafeBuffer) Reset() {
+	t.Lock()
+	defer t.Unlock()
+
+	t.buf.Reset()
 }
 
 // newThreadsafeBuffer returns a new threadsafeBuffer wrapping the given bytes.Buffer.
