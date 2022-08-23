@@ -67,13 +67,9 @@ func NewLineBufferedLogger(w io.Writer, cap uint32, flushPeriod time.Duration) *
 		tick := time.NewTicker(flushPeriod)
 		defer tick.Stop()
 
-		for {
-			select {
-			case <-tick.C:
-				l.Flush()
-			}
+		for range tick.C {
+			l.Flush()
 		}
-
 	}()
 
 	return l
