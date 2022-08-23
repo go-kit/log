@@ -2,6 +2,7 @@ package log_test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -63,6 +64,28 @@ func BenchmarkLineUnbuffered(b *testing.B) {
 
 	if want, have := b.N, len(lines)-1; want != have {
 		b.Errorf("expected %d lines, have %d", want, have)
+	}
+}
+
+func TestOnFlushCallback(t *testing.T) {
+	bufLog := log.NewLineBufferedLogger(io.Discard, 2, 10*time.Millisecond)
+	var count uint32
+
+	bufLog.OnFlush(func(bufLen uint32) {
+		count++
+	})
+
+	l := log.NewLogfmtLogger(log.NewSyncWriter(bufLog))
+	l.Log("line")
+	l.Log("line")
+	// first flush
+	l.Log("line")
+
+	// force a second flush
+	bufLog.Flush()
+
+	if count != 2 {
+		t.Errorf("unexpected number of flushed: %d expected %d", count, 2)
 	}
 }
 

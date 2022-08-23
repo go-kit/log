@@ -15,6 +15,8 @@ type LineBufferedLogger struct {
 	entries uint32
 	cap     uint32
 	w       io.Writer
+
+	onFlush func(bufLen uint32)
 }
 
 // Size returns the number of entries in the buffer.
@@ -41,7 +43,8 @@ func (l *LineBufferedLogger) Write(p []byte) (n int, err error) {
 
 // Flush forces the buffer to be written to the underlying writer.
 func (l *LineBufferedLogger) Flush() error {
-	if l.Size() <= 0 {
+	sz := l.Size()
+	if sz <= 0 {
 		return nil
 	}
 
@@ -50,7 +53,19 @@ func (l *LineBufferedLogger) Flush() error {
 
 	// WriteTo() calls Reset() on the underlying buffer, so it's not needed here
 	_, err := l.buf.WriteTo(l.w)
+
+	// only call OnFlush callback if write was successful
+	if err == nil && l.onFlush != nil {
+		l.onFlush(sz)
+	}
+
 	return err
+}
+
+// OnFlush allows for a callback function to be executed when Flush() is called.
+// The length of the buffer at the time of the Flush() will be passed to the function.
+func (l *LineBufferedLogger) OnFlush(fn func(bufLen uint32)) {
+	l.onFlush = fn
 }
 
 // NewLineBufferedLogger creates a new LineBufferedLogger with a configured capacity and flush period.
