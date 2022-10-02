@@ -1,6 +1,7 @@
 package log_test
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,30 +13,44 @@ import (
 	"github.com/go-kit/log"
 )
 
+const (
+	flushPeriod = 10 * time.Millisecond
+	bufferSize  = 10e6
+)
+
 // BenchmarkLineBuffered creates line-buffered loggers of various capacities to see which perform best.
 func BenchmarkLineBuffered(b *testing.B) {
-	b.ReportAllocs()
 
-	for i := uint32(1); i <= 1024; i *= 2 {
+	for i := 1; i <= 2048; i *= 2 {
+		f := outFile(b)
+		defer os.Remove(f.Name())
+
+		bufLog := log.NewLineBufferedLogger(f, uint32(i),
+			log.WithFlushPeriod(flushPeriod),
+			log.WithPrellocatedBuffer(bufferSize),
+		)
+		l := log.NewLogfmtLogger(bufLog)
+
 		b.Run(fmt.Sprintf("capacity:%d", i), func(b *testing.B) {
-			f := outFile(b)
-			defer os.Remove(f.Name())
+			b.ReportAllocs()
+			b.StartTimer()
 
-			bufLog := log.NewLineBufferedLogger(f, i, 10*time.Millisecond)
-			l := log.NewLogfmtLogger(log.NewSyncWriter(bufLog))
+			f.Truncate(0)
 
-			benchmarkRunner(b, l, baseMessage)
+			logger := log.With(l, "common_key", "common_value")
+			for j := 0; j < b.N; j++ {
+				logger.Log("foo_key", "foo_value")
+			}
 
 			// force a final flush for outstanding lines in buffer
 			bufLog.Flush()
-
 			b.StopTimer()
+
 			contents, err := ioutil.ReadFile(f.Name())
 			if err != nil {
 				b.Errorf("could not read test file: %s", err)
 			}
 			lines := strings.Split(string(contents), "\n")
-			b.StartTimer()
 
 			if want, have := b.N, len(lines)-1; want != have {
 				b.Errorf("expected %d lines, have %d", want, have)
@@ -51,49 +66,72 @@ func BenchmarkLineUnbuffered(b *testing.B) {
 	f := outFile(b)
 	defer os.Remove(f.Name())
 
-	l := log.NewLogfmtLogger(log.NewSyncWriter(f))
+	l := log.NewLogfmtLogger(f)
 	benchmarkRunner(b, l, baseMessage)
 
 	b.StopTimer()
+
 	contents, err := ioutil.ReadFile(f.Name())
 	if err != nil {
 		b.Errorf("could not read test file: %s", err)
 	}
 	lines := strings.Split(string(contents), "\n")
-	b.StartTimer()
 
 	if want, have := b.N, len(lines)-1; want != have {
 		b.Errorf("expected %d lines, have %d", want, have)
 	}
 }
 
+func TestLineBufferedConcurrency(t *testing.T) {
+	t.Parallel()
+	bufLog := log.NewLineBufferedLogger(io.Discard, 32,
+		log.WithFlushPeriod(flushPeriod),
+		log.WithPrellocatedBuffer(bufferSize),
+	)
+	testConcurrency(t, log.NewLogfmtLogger(bufLog), 10000)
+}
+
 func TestOnFlushCallback(t *testing.T) {
-	bufLog := log.NewLineBufferedLogger(io.Discard, 2, 10*time.Millisecond)
-	var count uint32
+	var (
+		flushCount     uint32
+		flushedEntries int
+		buf            bytes.Buffer
+	)
 
-	bufLog.OnFlush(func(bufLen uint32) {
-		count++
-	})
+	callback := func(entries uint32) {
+		flushCount++
+		flushedEntries += int(entries)
+	}
 
-	l := log.NewLogfmtLogger(log.NewSyncWriter(bufLog))
+	bufLog := log.NewLineBufferedLogger(&buf, 2,
+		log.WithFlushPeriod(flushPeriod),
+		log.WithPrellocatedBuffer(bufferSize),
+		log.WithFlushCallback(callback),
+	)
+
+	l := log.NewLogfmtLogger(bufLog)
 	l.Log("line")
 	l.Log("line")
 	// first flush
 	l.Log("line")
 
-	// force a second flush
+	// force a second
 	bufLog.Flush()
 
-	if count != 2 {
-		t.Errorf("unexpected number of flushed: %d expected %d", count, 2)
+	if flushCount != 2 {
+		t.Errorf("unexpected number of flushes: %d expected %d", flushCount, 2)
+	}
+
+	if flushedEntries != len(strings.Split(buf.String(), "\n"))-1 {
+		t.Errorf("unexpected number of entries: %d expected %d", flushedEntries, 3)
 	}
 }
 
 // outFile creates a real OS file for testing.
-// We cannot use stdout/stderr since we need to read the contents after to validate, and we have to write to a file
+// We cannot use stdout/stderr since we need to read the contents afterwards to validate, and we have to write to a file
 // to benchmark the impact of write() syscalls.
 func outFile(b *testing.B) *os.File {
-	f, err := os.OpenFile("/tmp/test", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	f, err := os.CreateTemp(os.TempDir(), "linebuffer*")
 	if err != nil {
 		b.Fatalf("cannot create test file: %s", err)
 	}
