@@ -89,8 +89,7 @@ func WithFlushCallback(fn func(entries uint32)) LineBufferedLoggerOption {
 // WithPrellocatedBuffer preallocates a buffer to reduce GC cycles and slice resizing.
 func WithPrellocatedBuffer(size uint32) LineBufferedLoggerOption {
 	return func(l *LineBufferedLogger) {
-		l.buf = newThreadsafeBuffer(bytes.NewBuffer(make([]byte, size)))
-		l.buf.Reset()
+		l.buf = newThreadsafeBuffer(bytes.NewBuffer(make([]byte, 0, size)))
 	}
 }
 
