@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -46,7 +45,7 @@ func BenchmarkLineBuffered(b *testing.B) {
 			bufLog.Flush()
 			b.StopTimer()
 
-			contents, err := ioutil.ReadFile(f.Name())
+			contents, err := os.ReadFile(f.Name())
 			if err != nil {
 				b.Errorf("could not read test file: %s", err)
 			}
@@ -71,7 +70,7 @@ func BenchmarkLineUnbuffered(b *testing.B) {
 
 	b.StopTimer()
 
-	contents, err := ioutil.ReadFile(f.Name())
+	contents, err := os.ReadFile(f.Name())
 	if err != nil {
 		b.Errorf("could not read test file: %s", err)
 	}
@@ -80,6 +79,13 @@ func BenchmarkLineUnbuffered(b *testing.B) {
 	if want, have := b.N, len(lines)-1; want != have {
 		b.Errorf("expected %d lines, have %d", want, have)
 	}
+}
+
+func BenchmarkLineDiscard(b *testing.B) {
+	b.ReportAllocs()
+
+	l := log.NewLogfmtLogger(io.Discard)
+	benchmarkRunner(b, l, baseMessage)
 }
 
 func TestLineBufferedConcurrency(t *testing.T) {
