@@ -17,8 +17,8 @@ _data_, and warrant some level of schematic rigor. Using a stricter,
 key/value-oriented message format for our logs, containing contextual and
 semantic information, makes it much easier to get insight into the
 operational activity of the systems we build. Consequently, `package log` is
-of the strong belief that "[the benefits of structured logging outweigh the
-minimal effort involved](https://www.thoughtworks.com/radar/techniques/structured-logging)".
+of the strong belief that structured logging offers great benefits in exchange
+for minimal effort.
 
 Migrating from unstructured to structured logging is probably a lot easier
 than you'd expect.
