@@ -32,6 +32,7 @@ type StdlibAdapter struct {
 	messageKey      string
 	prefix          string
 	joinPrefixToMsg bool
+	logRegexp       *regexp.Regexp
 }
 
 // StdlibAdapterOption sets a parameter for the StdlibAdapter.
@@ -52,6 +53,11 @@ func MessageKey(key string) StdlibAdapterOption {
 	return func(a *StdlibAdapter) { a.messageKey = key }
 }
 
+// Regexp sets the regular expression for parsing stdlib messages.
+func Regexp(logRegexp *regexp.Regexp) StdlibAdapterOption {
+	return func(a *StdlibAdapter) { a.logRegexp = logRegexp }
+}
+
 // Prefix configures the adapter to parse a prefix from stdlib log events. If
 // you provide a non-empty prefix to the stdlib logger, then your should provide
 // that same prefix to the adapter via this option.
@@ -70,17 +76,19 @@ func NewStdlibAdapter(logger Logger, options ...StdlibAdapterOption) io.Writer {
 		timestampKey: "ts",
 		fileKey:      "caller",
 		messageKey:   "msg",
+		logRegexp:    StdlibLogRegexpDateTimeFileMsg,
 	}
 	for _, option := range options {
 		option(&a)
 	}
+
 	return a
 }
 
 func (a StdlibAdapter) Write(p []byte) (int, error) {
 	p = a.handlePrefix(p)
 
-	result := subexps(p)
+	result := a.subexps(p)
 	keyvals := []interface{}{}
 	var timestamp string
 	if date, ok := result["date"]; ok && date != "" {
@@ -135,16 +143,17 @@ const (
 )
 
 var (
-	logRegexp = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpFile + logRegexpMsg)
+	StdlibLogRegexpDateTimeFileMsg = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpFile + logRegexpMsg)
+	StdlibLogRegexpDateTimeMsg     = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpMsg)
 )
 
-func subexps(line []byte) map[string]string {
-	m := logRegexp.FindSubmatch(line)
-	if len(m) < len(logRegexp.SubexpNames()) {
+func (a StdlibAdapter) subexps(line []byte) map[string]string {
+	m := a.logRegexp.FindSubmatch(line)
+	if len(m) < len(a.logRegexp.SubexpNames()) {
 		return map[string]string{}
 	}
 	result := map[string]string{}
-	for i, name := range logRegexp.SubexpNames() {
+	for i, name := range a.logRegexp.SubexpNames() {
 		result[name] = strings.TrimRight(string(m[i]), "\n")
 	}
 	return result

@@ -122,140 +122,21 @@ func TestStdLibAdapterPrefixedExtractionWithJoinToMessage(t *testing.T) {
 	}
 }
 
-func TestStdlibAdapterSubexps(t *testing.T) {
-	for input, wantMap := range map[string]map[string]string{
-		"hello world": {
-			"date": "",
-			"time": "",
-			"file": "",
-			"msg":  "hello world",
-		},
-		"hello\nworld": {
-			"date": "",
-			"time": "",
-			"file": "",
-			"msg":  "hello\nworld",
-		},
-		"2009/01/23: hello world": {
-			"date": "2009/01/23",
-			"time": "",
-			"file": "",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23",
-			"file": "",
-			"msg":  "hello world",
-		},
-		"01:23:23: hello world": {
-			"date": "",
-			"time": "01:23:23",
-			"file": "",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23.123123: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23.123123",
-			"file": "",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23.123123",
-			"file": "/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"01:23:23.123123 /a/b/c/d.go:23: hello world": {
-			"date": "",
-			"time": "01:23:23.123123",
-			"file": "/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23 /a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23",
-			"file": "/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 /a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "",
-			"file": "/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"/a/b/c/d.go:23: hello world": {
-			"date": "",
-			"time": "",
-			"file": "/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23.123123 C:/a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23.123123",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"01:23:23.123123 C:/a/b/c/d.go:23: hello world": {
-			"date": "",
-			"time": "01:23:23.123123",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23 C:/a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "01:23:23",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 C:/a/b/c/d.go:23: hello world": {
-			"date": "2009/01/23",
-			"time": "",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"C:/a/b/c/d.go:23: hello world": {
-			"date": "",
-			"time": "",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  "hello world",
-		},
-		"2009/01/23 01:23:23.123123 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
-			"date": "2009/01/23",
-			"time": "01:23:23.123123",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  ":.;<>_#{[]}\"\\",
-		},
-		"01:23:23.123123 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
-			"date": "",
-			"time": "01:23:23.123123",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  ":.;<>_#{[]}\"\\",
-		},
-		"2009/01/23 01:23:23 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
-			"date": "2009/01/23",
-			"time": "01:23:23",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  ":.;<>_#{[]}\"\\",
-		},
-		"2009/01/23 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
-			"date": "2009/01/23",
-			"time": "",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  ":.;<>_#{[]}\"\\",
-		},
-		"C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
-			"date": "",
-			"time": "",
-			"file": "C:/a/b/c/d.go:23",
-			"msg":  ":.;<>_#{[]}\"\\",
-		},
+func TestStdLibAdapterWithoutCaller(t *testing.T) {
+	buf := &bytes.Buffer{}
+	logger := NewLogfmtLogger(buf)
+	writer := NewStdlibAdapter(logger, Regexp(StdlibLogRegexpDateTimeMsg))
+	for input, want := range map[string]string{
+		"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:":                                     "msg=\"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:\"\n",
+		"2023/04/28 07:28:46 error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:":                 "ts=\"2023/04/28 07:28:46\" msg=\"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:\"\n",
+		"2023/04/28 07:28:46 /a/b/c/d.go:23: error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:": "ts=\"2023/04/28 07:28:46\" msg=\"/a/b/c/d.go:23: error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:\"\n",
+		"2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello":                                                                                  "ts=\"2009/01/23 01:23:23.123123\" msg=\"/a/b/c/d.go:23: hello\"\n",
+		"1:9182f": "msg=1:9182f\n",
 	} {
-		haveMap := subexps([]byte(input))
-		for key, want := range wantMap {
-			if have := haveMap[key]; want != have {
-				t.Errorf("%q: %q: want %q, have %q", input, key, want, have)
-			}
+		buf.Reset()
+		fmt.Fprint(writer, input)
+		if have := buf.String(); want != have {
+			t.Errorf("%q: want %#v, have %#v", input, want, have)
 		}
 	}
 }
