@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var subexps = StdlibAdapter.subexps
+
 func TestStdlibWriter(t *testing.T) {
 	buf := &bytes.Buffer{}
 	log.SetOutput(buf)
@@ -23,7 +25,7 @@ func TestStdlibWriter(t *testing.T) {
 func TestStdlibAdapterUsage(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger)
+	writer := NewStdlibAdapter(logger, Regexp(StdlibRegexpFull))
 	stdlog := log.New(writer, "", 0)
 
 	now := time.Now()
@@ -35,9 +37,9 @@ func TestStdlibAdapterUsage(t *testing.T) {
 		log.Ldate:                              "ts=" + date + " msg=hello\n",
 		log.Ltime:                              "ts=" + time + " msg=hello\n",
 		log.Ldate | log.Ltime:                  "ts=\"" + date + " " + time + "\" msg=hello\n",
-		log.Lshortfile:                         "caller=stdlib_test.go:44 msg=hello\n",
-		log.Lshortfile | log.Ldate:             "ts=" + date + " caller=stdlib_test.go:44 msg=hello\n",
-		log.Lshortfile | log.Ldate | log.Ltime: "ts=\"" + date + " " + time + "\" caller=stdlib_test.go:44 msg=hello\n",
+		log.Lshortfile:                         "caller=stdlib_test.go:46 msg=hello\n",
+		log.Lshortfile | log.Ldate:             "ts=" + date + " caller=stdlib_test.go:46 msg=hello\n",
+		log.Lshortfile | log.Ldate | log.Ltime: "ts=\"" + date + " " + time + "\" caller=stdlib_test.go:46 msg=hello\n",
 	} {
 		buf.Reset()
 		stdlog.SetFlags(flag)
@@ -51,7 +53,7 @@ func TestStdlibAdapterUsage(t *testing.T) {
 func TestStdLibAdapterExtraction(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger)
+	writer := NewStdlibAdapter(logger, Regexp(StdlibRegexpFull))
 	for input, want := range map[string]string{
 		"hello":                             "msg=hello\n",
 		"2009/01/23: hello":                 "ts=2009/01/23 msg=hello\n",
@@ -75,7 +77,7 @@ func TestStdLibAdapterExtraction(t *testing.T) {
 func TestStdLibAdapterPrefixedExtraction(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger, Prefix("some prefix ", false))
+	writer := NewStdlibAdapter(logger, Regexp(StdlibRegexpFull), Prefix("some prefix ", false))
 	for input, want := range map[string]string{
 		"some prefix hello":                                            "msg=hello\n",
 		"some prefix 2009/01/23: hello":                                "ts=2009/01/23 msg=hello\n",
@@ -100,7 +102,7 @@ func TestStdLibAdapterPrefixedExtraction(t *testing.T) {
 func TestStdLibAdapterPrefixedExtractionWithJoinToMessage(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger, Prefix("some prefix ", true))
+	writer := NewStdlibAdapter(logger, Regexp(StdlibRegexpFull), Prefix("some prefix ", true))
 	for input, want := range map[string]string{
 		"some prefix hello":                                            "msg=\"some prefix hello\"\n",
 		"some prefix 2009/01/23: hello":                                "ts=2009/01/23 msg=\"some prefix hello\"\n",
@@ -122,10 +124,148 @@ func TestStdLibAdapterPrefixedExtractionWithJoinToMessage(t *testing.T) {
 	}
 }
 
+func TestStdlibAdapterSubexps(t *testing.T) {
+	for input, wantMap := range map[string]map[string]string{
+		"hello world": {
+			"date": "",
+			"time": "",
+			"file": "",
+			"msg":  "hello world",
+		},
+		"hello\nworld": {
+			"date": "",
+			"time": "",
+			"file": "",
+			"msg":  "hello\nworld",
+		},
+		"2009/01/23: hello world": {
+			"date": "2009/01/23",
+			"time": "",
+			"file": "",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23",
+			"file": "",
+			"msg":  "hello world",
+		},
+		"01:23:23: hello world": {
+			"date": "",
+			"time": "01:23:23",
+			"file": "",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23.123123: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23.123123",
+			"file": "",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23.123123",
+			"file": "/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"01:23:23.123123 /a/b/c/d.go:23: hello world": {
+			"date": "",
+			"time": "01:23:23.123123",
+			"file": "/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23 /a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23",
+			"file": "/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 /a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "",
+			"file": "/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"/a/b/c/d.go:23: hello world": {
+			"date": "",
+			"time": "",
+			"file": "/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23.123123 C:/a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23.123123",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"01:23:23.123123 C:/a/b/c/d.go:23: hello world": {
+			"date": "",
+			"time": "01:23:23.123123",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23 C:/a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "01:23:23",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 C:/a/b/c/d.go:23: hello world": {
+			"date": "2009/01/23",
+			"time": "",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"C:/a/b/c/d.go:23: hello world": {
+			"date": "",
+			"time": "",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  "hello world",
+		},
+		"2009/01/23 01:23:23.123123 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
+			"date": "2009/01/23",
+			"time": "01:23:23.123123",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  ":.;<>_#{[]}\"\\",
+		},
+		"01:23:23.123123 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
+			"date": "",
+			"time": "01:23:23.123123",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  ":.;<>_#{[]}\"\\",
+		},
+		"2009/01/23 01:23:23 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
+			"date": "2009/01/23",
+			"time": "01:23:23",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  ":.;<>_#{[]}\"\\",
+		},
+		"2009/01/23 C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
+			"date": "2009/01/23",
+			"time": "",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  ":.;<>_#{[]}\"\\",
+		},
+		"C:/a/b/c/d.go:23: :.;<>_#{[]}\"\\": {
+			"date": "",
+			"time": "",
+			"file": "C:/a/b/c/d.go:23",
+			"msg":  ":.;<>_#{[]}\"\\",
+		},
+	} {
+		haveMap := subexps(StdlibAdapter{logRegexp: StdlibRegexpFull}, []byte(input))
+		for key, want := range wantMap {
+			if have := haveMap[key]; want != have {
+				t.Errorf("%q: %q: want %q, have %q", input, key, want, have)
+			}
+		}
+	}
+}
+
 func TestStdLibAdapterWithoutCaller(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger, Regexp(StdlibLogRegexpDateTimeMsg))
+	writer := NewStdlibAdapter(logger, Regexp(StdlibRegexpDefault))
 	for input, want := range map[string]string{
 		"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:":                                     "msg=\"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:\"\n",
 		"2023/04/28 07:28:46 error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:":                 "ts=\"2023/04/28 07:28:46\" msg=\"error encoding and sending metric family: write tcp 127.0.0.1:9182->127.0.0.1:60125: wsasend:\"\n",

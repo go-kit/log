@@ -56,6 +56,9 @@ func MessageKey(key string) StdlibAdapterOption {
 // Regexp sets the regular expression used to parse stdlib log messages.
 // By default, it's StdlibRegexpDefault.
 func Regexp(logRegexp *regexp.Regexp) StdlibAdapterOption {
+	if logRegexp == nil {
+		panic("logRegexp must be non-nil")
+	}
 	return func(a *StdlibAdapter) { a.logRegexp = logRegexp }
 }
 
@@ -77,7 +80,7 @@ func NewStdlibAdapter(logger Logger, options ...StdlibAdapterOption) io.Writer {
 		timestampKey: "ts",
 		fileKey:      "caller",
 		messageKey:   "msg",
-		logRegexp:    StdlibLogRegexpDateTimeFileMsg,
+		logRegexp:    StdlibRegexpDefault,
 	}
 	for _, option := range options {
 		option(&a)
@@ -137,15 +140,17 @@ func (a StdlibAdapter) handleMessagePrefix(msg string) string {
 }
 
 const (
-	logRegexpDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
-	logRegexpTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
-	logRegexpFile = `(?P<file>.+?:[0-9]+)?`
-	logRegexpMsg  = `(: )?(?P<msg>(?s:.*))`
+	StdlibRegexpPatternDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
+	StdlibRegexpPatternTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
+	StdlibRegexpPatternFile = `(?P<file>.+?:[0-9]+)?`
+	StdlibRegexpPatternMsg  = `(: )?(?P<msg>(?s:.*))`
 )
 
 var (
-	StdlibLogRegexpDateTimeFileMsg = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpFile + logRegexpMsg)
-	StdlibLogRegexpDateTimeMsg     = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpMsg)
+	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
+	StdlibRegexpFull = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternFile + StdlibRegexpPatternMsg)
+	// StdlibRegexpDefault captures date, time and message from stdlib log messages.
+	StdlibRegexpDefault = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternMsg)
 )
 
 func (a StdlibAdapter) subexps(line []byte) map[string]string {
