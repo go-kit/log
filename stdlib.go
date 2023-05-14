@@ -53,13 +53,14 @@ func MessageKey(key string) StdlibAdapterOption {
 	return func(a *StdlibAdapter) { a.messageKey = key }
 }
 
-// Regexp sets the regular expression used to parse stdlib log messages.
-// By default, it's StdlibRegexpDefault.
-func Regexp(logRegexp *regexp.Regexp) StdlibAdapterOption {
-	if logRegexp == nil {
-		panic("logRegexp must be non-nil")
+// StdlibRegexp sets the regular expression used to parse stdlib log messages.
+// Nil regexps are ignored and will return options that are no-ops. The default
+// value is StdlibRegexpDefault.
+func StdlibRegexp(re *regexp.Regexp) StdlibAdapterOption {
+	if re == nil {
+		return func(a *StdlibAdapter) {}
 	}
-	return func(a *StdlibAdapter) { a.logRegexp = logRegexp }
+	return func(a *StdlibAdapter) { a.logRegexp = re }
 }
 
 // Prefix configures the adapter to parse a prefix from stdlib log events. If
