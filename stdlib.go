@@ -150,7 +150,8 @@ var (
 
 func (a StdlibAdapter) subexps(line []byte) map[string]string {
 	m := a.logRegexp.FindSubmatch(line)
-	if len(m) < len(a.logRegexp.SubexpNames()) {
+	n := a.logRegexp.SubexpNames()
+	if len(m) < len(n) {
 		return map[string]string{}
 	}
 	result := map[string]string{}
