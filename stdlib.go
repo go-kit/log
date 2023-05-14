@@ -53,7 +53,8 @@ func MessageKey(key string) StdlibAdapterOption {
 	return func(a *StdlibAdapter) { a.messageKey = key }
 }
 
-// Regexp sets the regular expression for parsing stdlib messages.
+// Regexp sets the regular expression used to parse stdlib log messages.
+// By default, it's StdlibRegexpDefault.
 func Regexp(logRegexp *regexp.Regexp) StdlibAdapterOption {
 	return func(a *StdlibAdapter) { a.logRegexp = logRegexp }
 }
