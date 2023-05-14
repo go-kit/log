@@ -155,7 +155,7 @@ func (a StdlibAdapter) subexps(line []byte) map[string]string {
 		return map[string]string{}
 	}
 	result := map[string]string{}
-	for i, name := range a.logRegexp.SubexpNames() {
+	for i, name := range n {
 		result[name] = strings.TrimRight(string(m[i]), "\n")
 	}
 	return result
