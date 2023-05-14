@@ -154,14 +154,14 @@ var (
 )
 
 func (a StdlibAdapter) subexps(line []byte) map[string]string {
-	m := a.logRegexp.FindSubmatch(line)
+	m := a.logRegexp.FindStringSubmatch(string(line))
 	n := a.logRegexp.SubexpNames()
 	if len(m) < len(n) {
 		return map[string]string{}
 	}
 	result := map[string]string{}
 	for i, name := range n {
-		result[name] = strings.TrimRight(string(m[i]), "\n")
+		result[name] = strings.TrimRight(m[i], "\n")
 	}
 	return result
 }
