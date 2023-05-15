@@ -81,7 +81,7 @@ func NewStdlibAdapter(logger Logger, options ...StdlibAdapterOption) io.Writer {
 		timestampKey: "ts",
 		fileKey:      "caller",
 		messageKey:   "msg",
-		logRegexp:    StdlibRegexpDefault,
+		logRegexp:    StdlibRegexpFull,
 	}
 	for _, option := range options {
 		option(&a)
@@ -150,7 +150,7 @@ const (
 var (
 	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
 	StdlibRegexpFull = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternFile + StdlibRegexpPatternMsg)
-	// StdlibRegexpDefault captures date, time and message from stdlib log messages.
+	// StdlibRegexpDefault captures date, time, caller (file) and message from stdlib log messages.
 	StdlibRegexpDefault = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternMsg)
 )
 
