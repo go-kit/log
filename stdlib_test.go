@@ -51,11 +51,11 @@ func TestStdlibAdapterUsage(t *testing.T) {
 
 func TestStdLibAdapter(t *testing.T) {
 	var testcases = []struct {
-		regexp                *regexp.Regexp
-		input                 string
-		want                  string
-		prefix                string
-		prefixJoinPrefixToMsg bool
+		input      string
+		regexp     regexp.Regexp
+		prefix     string
+		joinPrefix bool
+		want       string
 	}{
 		{
 			regexp: StdlibRegexpFull,
