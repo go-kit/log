@@ -150,8 +150,7 @@ const (
 var (
 	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
 	StdlibRegexpFull = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternFile + stdlibRegexpPatternMsg)
-	// StdlibRegexpDefault
-	//captures date, time and message from stdlib log messages.
+	// StdlibRegexpDefault captures date, time and message from stdlib log messages.
 	StdlibRegexpDefault = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternMsg)
 )
 
