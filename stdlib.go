@@ -55,7 +55,7 @@ func MessageKey(key string) StdlibAdapterOption {
 
 // StdlibRegexp sets the regular expression used to parse stdlib log messages.
 // Nil regexps are ignored and will return options that are no-ops. The default
-// value is StdlibRegexpDefault.
+// value is StdlibRegexpFull.
 func StdlibRegexp(re *regexp.Regexp) StdlibAdapterOption {
 	if re == nil {
 		return func(a *StdlibAdapter) {}
@@ -150,7 +150,8 @@ const (
 var (
 	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
 	StdlibRegexpFull = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternFile + StdlibRegexpPatternMsg)
-	// StdlibRegexpDefault captures date, time, caller (file) and message from stdlib log messages.
+	// StdlibRegexpDefault
+	//captures date, time, caller (file) and message from stdlib log messages.
 	StdlibRegexpDefault = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternMsg)
 )
 
