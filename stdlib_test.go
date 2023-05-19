@@ -296,7 +296,7 @@ func TestStdLibAdapter(t *testing.T) {
 		t.Run(tt.input, func(t *testing.T) {
 			var buf bytes.Buffer
 			adapter := NewStdlibAdapter(NewLogfmtLogger(&buf), StdlibRegexp(tt.regexp), Prefix(tt.prefix, tt.prefixJoinPrefixToMsg))
-			_, _ = fmt.Fprint(adapter, tt.input)
+			fmt.Fprint(adapter, tt.input)
 
 			if want, have := tt.want+"\n", buf.String(); want != have {
 				t.Errorf("%q: want %q, have %q", tt.input, want, have)
