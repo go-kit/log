@@ -55,7 +55,10 @@ func MessageKey(key string) StdlibAdapterOption {
 
 // StdlibRegexp sets the regular expression used to parse stdlib log messages.
 // Nil regexps are ignored and will return options that are no-ops. The default
-// value is StdlibRegexpFull.
+// value is StdlibRegexpFull. StdlibAdapter expects named capture groups in the
+// regular expression. "date" and "time" capture groups are used to parse the
+// log timestamp. "msg" is used for parse the message and "file" is used for
+// parse the caller.
 func StdlibRegexp(re *regexp.Regexp) StdlibAdapterOption {
 	if re == nil {
 		return func(a *StdlibAdapter) {}
