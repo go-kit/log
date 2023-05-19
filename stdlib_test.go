@@ -36,9 +36,9 @@ func TestStdlibAdapterUsage(t *testing.T) {
 		log.Ldate:                              "ts=" + date + " msg=hello\n",
 		log.Ltime:                              "ts=" + time + " msg=hello\n",
 		log.Ldate | log.Ltime:                  "ts=\"" + date + " " + time + "\" msg=hello\n",
-		log.Lshortfile:                         "caller=stdlib_test.go:46 msg=hello\n",
-		log.Lshortfile | log.Ldate:             "ts=" + date + " caller=stdlib_test.go:46 msg=hello\n",
-		log.Lshortfile | log.Ldate | log.Ltime: "ts=\"" + date + " " + time + "\" caller=stdlib_test.go:46 msg=hello\n",
+		log.Lshortfile:                         "caller=stdlib_test.go:45 msg=hello\n",
+		log.Lshortfile | log.Ldate:             "ts=" + date + " caller=stdlib_test.go:45 msg=hello\n",
+		log.Lshortfile | log.Ldate | log.Ltime: "ts=\"" + date + " " + time + "\" caller=stdlib_test.go:45 msg=hello\n",
 	} {
 		buf.Reset()
 		stdlog.SetFlags(flag)
