@@ -141,18 +141,18 @@ func (a StdlibAdapter) handleMessagePrefix(msg string) string {
 }
 
 const (
-	StdlibRegexpPatternDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
-	StdlibRegexpPatternTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
-	StdlibRegexpPatternFile = `(?P<file>.+?:[0-9]+)?`
-	StdlibRegexpPatternMsg  = `(: )?(?P<msg>(?s:.*))`
+	stdlibRegexpPatternDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
+	stdlibRegexpPatternTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
+	stdlibRegexpPatternFile = `(?P<file>.+?:[0-9]+)?`
+	stdlibRegexpPatternMsg  = `(: )?(?P<msg>(?s:.*))`
 )
 
 var (
 	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
-	StdlibRegexpFull = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternFile + StdlibRegexpPatternMsg)
+	StdlibRegexpFull = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternFile + stdlibRegexpPatternMsg)
 	// StdlibRegexpDefault
 	//captures date, time, caller (file) and message from stdlib log messages.
-	StdlibRegexpDefault = regexp.MustCompile(StdlibRegexpPatternDate + StdlibRegexpPatternTime + StdlibRegexpPatternMsg)
+	StdlibRegexpDefault = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternMsg)
 )
 
 func (a StdlibAdapter) subexps(line []byte) map[string]string {
