@@ -52,7 +52,7 @@ func TestStdlibAdapterUsage(t *testing.T) {
 func TestStdLibAdapter(t *testing.T) {
 	var testcases = []struct {
 		input      string
-		regexp     regexp.Regexp
+		regexp     *regexp.Regexp
 		prefix     string
 		joinPrefix bool
 		want       string
@@ -113,158 +113,147 @@ func TestStdLibAdapter(t *testing.T) {
 			want:   `caller=/a/b/c/d.go:23 msg=hello`,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix hello`,
-			want:                  `msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix hello`,
+			want:   `msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23: hello`,
-			want:                  `ts=2009/01/23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23: hello`,
+			want:   `ts=2009/01/23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23" msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23 01:23:23: hello`,
+			want:   `ts="2009/01/23 01:23:23" msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 01:23:23: hello`,
-			want:                  `ts=01:23:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 01:23:23: hello`,
+			want:   `ts=01:23:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23.123123: hello`,
-			want:                  `ts="2009/01/23 01:23:23.123123" msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23 01:23:23.123123: hello`,
+			want:   `ts="2009/01/23 01:23:23.123123" msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23.123123" caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello`,
+			want:   `ts="2009/01/23 01:23:23.123123" caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 01:23:23.123123 /a/b/c/d.go:23: hello`,
-			want:                  `ts=01:23:23.123123 caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 01:23:23.123123 /a/b/c/d.go:23: hello`,
+			want:   `ts=01:23:23.123123 caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23 /a/b/c/d.go:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23" caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23 01:23:23 /a/b/c/d.go:23: hello`,
+			want:   `ts="2009/01/23 01:23:23" caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 /a/b/c/d.go:23: hello`,
-			want:                  `ts=2009/01/23 caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix 2009/01/23 /a/b/c/d.go:23: hello`,
+			want:   `ts=2009/01/23 caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix /a/b/c/d.go:23: hello`,
-			want:                  `caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `some prefix /a/b/c/d.go:23: hello`,
+			want:   `caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `/a/b/c/d.go:23: some prefix hello`,
-			want:                  `caller=/a/b/c/d.go:23 msg=hello`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: false,
+			regexp: StdlibRegexpFull,
+			input:  `/a/b/c/d.go:23: some prefix hello`,
+			want:   `caller=/a/b/c/d.go:23 msg=hello`,
+			prefix: "some prefix ",
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix hello`,
-			want:                  `msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix hello`,
+			want:       `msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23: hello`,
-			want:                  `ts=2009/01/23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23: hello`,
+			want:       `ts=2009/01/23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23" msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23 01:23:23: hello`,
+			want:       `ts="2009/01/23 01:23:23" msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 01:23:23: hello`,
-			want:                  `ts=01:23:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 01:23:23: hello`,
+			want:       `ts=01:23:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23.123123: hello`,
-			want:                  `ts="2009/01/23 01:23:23.123123" msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23 01:23:23.123123: hello`,
+			want:       `ts="2009/01/23 01:23:23.123123" msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23.123123" caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23 01:23:23.123123 /a/b/c/d.go:23: hello`,
+			want:       `ts="2009/01/23 01:23:23.123123" caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 01:23:23.123123 /a/b/c/d.go:23: hello`,
-			want:                  `ts=01:23:23.123123 caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 01:23:23.123123 /a/b/c/d.go:23: hello`,
+			want:       `ts=01:23:23.123123 caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 01:23:23 /a/b/c/d.go:23: hello`,
-			want:                  `ts="2009/01/23 01:23:23" caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23 01:23:23 /a/b/c/d.go:23: hello`,
+			want:       `ts="2009/01/23 01:23:23" caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix 2009/01/23 /a/b/c/d.go:23: hello`,
-			want:                  `ts=2009/01/23 caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix 2009/01/23 /a/b/c/d.go:23: hello`,
+			want:       `ts=2009/01/23 caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `some prefix /a/b/c/d.go:23: hello`,
-			want:                  `caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `some prefix /a/b/c/d.go:23: hello`,
+			want:       `caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
-			regexp:                StdlibRegexpFull,
-			input:                 `/a/b/c/d.go:23: some prefix hello`,
-			want:                  `caller=/a/b/c/d.go:23 msg="some prefix hello"`,
-			prefix:                "some prefix ",
-			prefixJoinPrefixToMsg: true,
+			regexp:     StdlibRegexpFull,
+			input:      `/a/b/c/d.go:23: some prefix hello`,
+			want:       `caller=/a/b/c/d.go:23 msg="some prefix hello"`,
+			prefix:     "some prefix ",
+			joinPrefix: true,
 		},
 		{
 			regexp: StdlibRegexpDefault,
@@ -295,25 +284,12 @@ func TestStdLibAdapter(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.input, func(t *testing.T) {
 			var buf bytes.Buffer
-			adapter := NewStdlibAdapter(NewLogfmtLogger(&buf), StdlibRegexp(tt.regexp), Prefix(tt.prefix, tt.prefixJoinPrefixToMsg))
+			adapter := NewStdlibAdapter(NewLogfmtLogger(&buf), StdlibRegexp(tt.regexp), Prefix(tt.prefix, tt.joinPrefix))
 			fmt.Fprint(adapter, tt.input)
 
 			if want, have := tt.want+"\n", buf.String(); want != have {
 				t.Errorf("%q: want %q, have %q", tt.input, want, have)
 			}
 		})
-	}
-}
-
-func TestStdLibAdapterPrefixedExtractionWithJoinToMessage(t *testing.T) {
-	buf := &bytes.Buffer{}
-	logger := NewLogfmtLogger(buf)
-	writer := NewStdlibAdapter(logger, Prefix("some prefix ", true))
-	for input, want := range map[string]string{} {
-		buf.Reset()
-		fmt.Fprint(writer, input)
-		if have := buf.String(); want != have {
-			t.Errorf("%q: want %#v, have %#v", input, want, have)
-		}
 	}
 }
