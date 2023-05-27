@@ -112,7 +112,7 @@ func TestStdLibAdapter(t *testing.T) {
 			input:  `/a/b/c/d.go:23: hello`,
 			want:   `caller=/a/b/c/d.go:23 msg=hello`,
 		},
-{
+		{
 			regexp: StdlibRegexpFull,
 			input:  `some prefix hello`,
 			prefix: "some prefix ",
