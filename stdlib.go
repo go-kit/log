@@ -32,6 +32,7 @@ type StdlibAdapter struct {
 	messageKey      string
 	prefix          string
 	joinPrefixToMsg bool
+	logRegexp       *regexp.Regexp
 }
 
 // StdlibAdapterOption sets a parameter for the StdlibAdapter.
@@ -52,6 +53,22 @@ func MessageKey(key string) StdlibAdapterOption {
 	return func(a *StdlibAdapter) { a.messageKey = key }
 }
 
+// StdlibRegexp sets the regular expression used to parse stdlib log messages.
+//
+// The regexp is expected to contain specific named capture groups. The "date"
+// and "time" capture groups are combined for the timestamp. The "file" capture
+// group (which usually also includes line) is used for the caller. The "msg"
+// capture group is used for the actual log message.
+//
+// Nil regexps are ignored and will return options that are no-ops. The default
+// value is StdlibRegexpFull.
+func StdlibRegexp(re *regexp.Regexp) StdlibAdapterOption {
+	if re == nil {
+		return func(a *StdlibAdapter) {}
+	}
+	return func(a *StdlibAdapter) { a.logRegexp = re }
+}
+
 // Prefix configures the adapter to parse a prefix from stdlib log events. If
 // you provide a non-empty prefix to the stdlib logger, then your should provide
 // that same prefix to the adapter via this option.
@@ -70,17 +87,19 @@ func NewStdlibAdapter(logger Logger, options ...StdlibAdapterOption) io.Writer {
 		timestampKey: "ts",
 		fileKey:      "caller",
 		messageKey:   "msg",
+		logRegexp:    StdlibRegexpFull,
 	}
 	for _, option := range options {
 		option(&a)
 	}
+
 	return a
 }
 
 func (a StdlibAdapter) Write(p []byte) (int, error) {
 	p = a.handlePrefix(p)
 
-	result := subexps(p)
+	result := a.subexps(p)
 	keyvals := []interface{}{}
 	var timestamp string
 	if date, ok := result["date"]; ok && date != "" {
@@ -128,24 +147,29 @@ func (a StdlibAdapter) handleMessagePrefix(msg string) string {
 }
 
 const (
-	logRegexpDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
-	logRegexpTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
-	logRegexpFile = `(?P<file>.+?:[0-9]+)?`
-	logRegexpMsg  = `(: )?(?P<msg>(?s:.*))`
+	stdlibRegexpPatternDate = `(?P<date>[0-9]{4}/[0-9]{2}/[0-9]{2})?[ ]?`
+	stdlibRegexpPatternTime = `(?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)?[ ]?`
+	stdlibRegexpPatternFile = `(?P<file>.+?:[0-9]+)?`
+	stdlibRegexpPatternMsg  = `(: )?(?P<msg>(?s:.*))`
 )
 
 var (
-	logRegexp = regexp.MustCompile(logRegexpDate + logRegexpTime + logRegexpFile + logRegexpMsg)
+	// StdlibRegexpFull captures date, time, caller (file), and message from stdlib log messages.
+	StdlibRegexpFull = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternFile + stdlibRegexpPatternMsg)
+
+	// StdlibRegexpDefault captures date, time and message from stdlib log messages.
+	StdlibRegexpDefault = regexp.MustCompile(stdlibRegexpPatternDate + stdlibRegexpPatternTime + stdlibRegexpPatternMsg)
 )
 
-func subexps(line []byte) map[string]string {
-	m := logRegexp.FindSubmatch(line)
-	if len(m) < len(logRegexp.SubexpNames()) {
+func (a StdlibAdapter) subexps(line []byte) map[string]string {
+	m := a.logRegexp.FindStringSubmatch(string(line))
+	n := a.logRegexp.SubexpNames()
+	if len(m) < len(n) {
 		return map[string]string{}
 	}
 	result := map[string]string{}
-	for i, name := range logRegexp.SubexpNames() {
-		result[name] = strings.TrimRight(string(m[i]), "\n")
+	for i, name := range n {
+		result[name] = strings.TrimRight(m[i], "\n")
 	}
 	return result
 }
